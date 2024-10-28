@@ -1,0 +1,8 @@
+.idea
+data
+model
+output
+src/__pycache__
+
+*.ipynb
+*.pyc
