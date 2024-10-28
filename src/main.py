@@ -22,7 +22,7 @@ from model import BERTDataset
 os.environ['WANDB_DISABLED'] = 'true'
 logger = logging.getLogger(__name__)
 
-def set_seed(seed: int = 42):
+def set_seed(seed: int = 456):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -32,13 +32,13 @@ def set_seed(seed: int = 42):
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
 
-SEED = 42
+SEED = 456
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-print(DEVICE)
+#print(DEVICE)
 
 # BASE_DIR is parent directory of src
-BASE_DIR = os.getcwd()
+BASE_DIR = os.path.dirname(os.getcwd())
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 MODEL_DIR = os.path.join(BASE_DIR, 'model')
 OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
@@ -85,15 +85,19 @@ def train(run_name : str):
         eval_steps=100,
         save_steps=100,
         save_total_limit=2,
+        
+        # 수정 안됨
         learning_rate= 2e-05,
         adam_beta1 = 0.9,
         adam_beta2 = 0.999,
         adam_epsilon=1e-08,
         weight_decay=0.01,
         lr_scheduler_type='linear',
+        num_train_epochs=2,
+
+        # 수정 가능
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        num_train_epochs=2,
         load_best_model_at_end=True,
         metric_for_best_model='eval_f1',
         greater_is_better=True,
