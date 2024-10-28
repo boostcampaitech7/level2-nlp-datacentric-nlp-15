@@ -38,7 +38,7 @@ DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 print(DEVICE)
 
 # BASE_DIR is parent directory of src
-BASE_DIR = os.path.dirname(os.getcwd())
+BASE_DIR = os.getcwd()
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 MODEL_DIR = os.path.join(BASE_DIR, 'model')
 OUTPUT_DIR = os.path.join(BASE_DIR, 'output')
