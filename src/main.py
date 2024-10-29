@@ -79,11 +79,10 @@ def main():
     if train_args.do_train:
         model_name = model_args.model_name_or_path #'klue/bert-base'
         tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=7).to(DEVICE)
     if not train_args.do_train:
         model_name = os.path.join(model_args.model_name_or_path, 'checkpoint-124')
         tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
-        model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=7).to(DEVICE)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=7).to(DEVICE)
 
     # Load data
     data = pd.read_csv(data_args.dataset_name) #pd.read_csv(os.path.join(DATA_DIR, 'train.csv'))

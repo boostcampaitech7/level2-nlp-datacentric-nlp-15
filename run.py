@@ -38,14 +38,14 @@ subprocess.run([
     "--per_device_eval_batch_size", "32",
 ], check=True)
 
-# Perform prediction (inference)
-subprocess.run([
-    "python", "main.py",
-    "--output_dir", predict_dir,
-    "--test_dataset_name", predict_dataset_name,
-    "--model_name_or_path", train_dir,
-    "--do_predict"
-], check=True)
+# # Perform prediction (inference)
+# subprocess.run([
+#     "python", "main.py",
+#     "--output_dir", predict_dir,
+#     "--test_dataset_name", predict_dataset_name,
+#     "--model_name_or_path", train_dir,
+#     "--do_predict"
+# ], check=True)
 
 # Print Done
 print(f"All Done. Check the output in {predict_dir}")
