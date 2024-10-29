@@ -59,7 +59,7 @@ def main():
 
     project_prefix = "[train]" if train_args.do_train else "[eval]" if train_args.do_eval else "[pred]"
     wandb.init(
-        project="odqa",
+        project="data_centric",
         entity="nlp15",
         name=f"{project_prefix} {model_args.model_name_or_path.split('/')[0]}_{data_args.dataset_name}_{(datetime.datetime.now() + datetime.timedelta(hours=9)).strftime('%Y%m%d_%H%M%S')}",
         save_code=True,
@@ -121,7 +121,7 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         logging_strategy='steps',
         eval_strategy='steps',
         save_strategy='steps',
-        logging_steps=100,
+        logging_steps=10,
         eval_steps=100,
         save_steps=100,
         save_total_limit=2,
