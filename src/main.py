@@ -111,7 +111,7 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         num_train_epochs=2,
 
         # 수정 가능
-        learning_rate=data_args.train_learning_rate,
+        learning_rate=train_args.learning_rate,
         per_device_train_batch_size=train_args.per_device_train_batch_size,
         per_device_eval_batch_size=train_args.per_device_eval_batch_size,
         load_best_model_at_end=True,
