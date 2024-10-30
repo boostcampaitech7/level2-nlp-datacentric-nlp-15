@@ -81,11 +81,11 @@ def main(run_name):
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     if train_args.do_train:
-        model = train(model, data_train, data_valid, data_collator, run_name, train_args)
+        model = train(model, data_train, data_valid, data_collator, run_name, train_args, data_args)
     if train_args.do_predict:
         predict(model, tokenizer, train_args, data_args)
 
-def train(model, data_train, data_valid, data_collator, run_name : str, train_args: TrainingArguments):
+def train(model, data_train, data_valid, data_collator, run_name : str, train_args: TrainingArguments, data_args: DataTrainingArguments):
     # output_path = os.path.join(MODEL_DIR, run_name)
 
     training_args = TrainingArguments(
@@ -97,13 +97,12 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         logging_strategy='steps',
         eval_strategy='steps',
         save_strategy='steps',
-        logging_steps=10,
+        logging_steps=100,
         eval_steps=100,
         save_steps=100,
         save_total_limit=2,
         
         # 수정 안됨
-        learning_rate= 2e-05,
         adam_beta1 = 0.9,
         adam_beta2 = 0.999,
         adam_epsilon=1e-08,
@@ -112,6 +111,7 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         num_train_epochs=2,
 
         # 수정 가능
+        learning_rate=data_args.train_learning_rate,
         per_device_train_batch_size=train_args.per_device_train_batch_size,
         per_device_eval_batch_size=train_args.per_device_eval_batch_size,
         load_best_model_at_end=True,
