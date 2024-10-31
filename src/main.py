@@ -35,7 +35,7 @@ def set_seed(seed: int = 456):
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
 
-SEED = 456
+SEED = 2024
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -66,8 +66,10 @@ def main(run_name):
     if train_args.do_train:
         model_name = model_args.model_name_or_path #'klue/bert-base'
         tokenizer = AutoTokenizer.from_pretrained(model_name)
+
     if not train_args.do_train:
-        model_name = os.path.join(model_args.model_name_or_path, 'checkpoint-124')
+        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
+        model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
 
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=7).to(DEVICE)
@@ -82,6 +84,7 @@ def main(run_name):
 
     if train_args.do_train:
         model = train(model, data_train, data_valid, data_collator, run_name, train_args)
+
     if train_args.do_predict:
         predict(model, tokenizer, train_args, data_args)
 
@@ -153,7 +156,7 @@ def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrai
     dataset_test['target'] = preds
 
     os.makedirs(train_args.output_dir, exist_ok=True)
-    dataset_test.to_csv(os.path.join(train_args.output_dir, 'predictions.csv'), index=False)
+    dataset_test.to_csv(os.path.join(train_args.output_dir, 'predictions_5960.csv'), index=False)
 
 if __name__ == '__main__':
     try:

@@ -23,8 +23,6 @@ if not os.path.exists(src_dir):
     raise FileNotFoundError(f"The source directory {src_dir} does not exist. Please adjust the path accordingly.")
 os.chdir(src_dir)
 
-
-
 run_name = input('Please Enter Your Run Name : ')
 
 while run_name == '':
