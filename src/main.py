@@ -35,7 +35,7 @@ def set_seed(seed: int = 456):
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
 
-SEED = 456
+SEED = 2024
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
@@ -66,8 +66,10 @@ def main(run_name):
     if train_args.do_train:
         model_name = model_args.model_name_or_path #'klue/bert-base'
         tokenizer = AutoTokenizer.from_pretrained(model_name)
+
     if not train_args.do_train:
-        model_name = os.path.join(model_args.model_name_or_path, 'checkpoint-124')
+        latest_ckpt = sorted(os.listdir(model_args.model_name_or_path))[-1]
+        model_name = os.path.join(model_args.model_name_or_path, latest_ckpt)
         tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
 
     model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=7).to(DEVICE)
@@ -81,15 +83,15 @@ def main(run_name):
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     if train_args.do_train:
-        model = train(model, data_train, data_valid, data_collator, run_name, train_args, data_args)
+        model = train(model, data_train, data_valid, data_collator, train_args)
     if train_args.do_predict:
         predict(model, tokenizer, train_args, data_args)
 
-def train(model, data_train, data_valid, data_collator, run_name : str, train_args: TrainingArguments, data_args: DataTrainingArguments):
+def train(model, data_train, data_valid, data_collator, train_args: TrainingArguments):
     # output_path = os.path.join(MODEL_DIR, run_name)
 
     training_args = TrainingArguments(
-        output_dir=train_args.output_dir, #output_path,
+        output_dir=train_args.output_dir,
         overwrite_output_dir=True,
         do_train=train_args.do_train,
         do_eval=train_args.do_eval,
@@ -139,8 +141,8 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
 
     return model
 
-def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrainingArguments = None, run_name : str = None):
-    dataset_test = pd.read_csv(data_args.test_dataset_name) #pd.read_csv(os.path.join(DATA_DIR, 'test.csv'))
+def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrainingArguments = None):
+    dataset_test = pd.read_csv(data_args.test_dataset_name)
     model.eval()
     preds = []
 

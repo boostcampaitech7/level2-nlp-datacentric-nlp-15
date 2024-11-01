@@ -5,7 +5,7 @@ import subprocess
 from datetime import datetime, timedelta
 
 # Get current time (UTC + 9 hours)
-current_time = datetime.utcnow() + timedelta(hours=9)
+current_time = datetime.now() + timedelta(hours=9)
 current_time_str = current_time.strftime('%Y%m%d_%H%M%S')
 
 # Root directory (adjust this if necessary)
@@ -22,8 +22,6 @@ src_dir = os.path.join(root_dir, 'src')
 if not os.path.exists(src_dir):
     raise FileNotFoundError(f"The source directory {src_dir} does not exist. Please adjust the path accordingly.")
 os.chdir(src_dir)
-
-
 
 run_name = input('Please Enter Your Run Name : ')
 

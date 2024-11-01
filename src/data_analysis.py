@@ -23,4 +23,27 @@ def func2():
     new_data_path = os.path.join(parent_dir, 'data', 'test_short.csv')
     ten_data.to_csv(new_data_path, index=False, encoding='utf-8')
 
-func2()
+def func3():
+    random_sample_200 = 200
+
+    # random sample 200 data rows
+    random_sample = train_data.sample(random_sample_200)
+    random_sample.to_csv(os.path.join(parent_dir, 'data', 'train_sample_200.csv'), index=False)
+
+def func4():
+    # this function reads train csv text and show how many korean characters are in the text
+    import re
+    korean_char = re.compile('[가-힣]')
+    train_data['korean_char_count'] = train_data['text'].apply(lambda x: len(korean_char.findall(x)))
+
+    # show in pandas dataframe bar plot
+    train_data['korean_char_count'].plot(kind='hist', bins=50, title='Korean Character Count in Text')
+
+    import matplotlib.pyplot as plt
+    plt.show()
+
+    print(train_data['korean_char_count'].describe())
+
+#func2()
+#func3()
+func4()
