@@ -56,6 +56,10 @@ class DataTrainingArguments:
             "help": "The path of the data directory"
         },
     )
+    train_learning_rate: float = field(
+        default=2e-5,
+        metadata={"help": "The initial learning rate for training"}
+    )
 ##################################################################################################################
     overwrite_cache: bool = field(
         default=False,

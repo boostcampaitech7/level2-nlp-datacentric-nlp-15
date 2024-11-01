@@ -83,16 +83,15 @@ def main(run_name):
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     if train_args.do_train:
-        model = train(model, data_train, data_valid, data_collator, run_name, train_args)
-
+        model = train(model, data_train, data_valid, data_collator, train_args)
     if train_args.do_predict:
         predict(model, tokenizer, train_args, data_args)
 
-def train(model, data_train, data_valid, data_collator, run_name : str, train_args: TrainingArguments):
+def train(model, data_train, data_valid, data_collator, train_args: TrainingArguments):
     # output_path = os.path.join(MODEL_DIR, run_name)
 
     training_args = TrainingArguments(
-        output_dir=train_args.output_dir, #output_path,
+        output_dir=train_args.output_dir,
         overwrite_output_dir=True,
         do_train=train_args.do_train,
         do_eval=train_args.do_eval,
@@ -106,7 +105,6 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         save_total_limit=2,
         
         # 수정 안됨
-        learning_rate= 2e-05,
         adam_beta1 = 0.9,
         adam_beta2 = 0.999,
         adam_epsilon=1e-08,
@@ -115,6 +113,7 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
         num_train_epochs=2,
 
         # 수정 가능
+        learning_rate=train_args.learning_rate,
         per_device_train_batch_size=train_args.per_device_train_batch_size,
         per_device_eval_batch_size=train_args.per_device_eval_batch_size,
         load_best_model_at_end=True,
@@ -142,8 +141,8 @@ def train(model, data_train, data_valid, data_collator, run_name : str, train_ar
 
     return model
 
-def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrainingArguments = None, run_name : str = None):
-    dataset_test = pd.read_csv(data_args.test_dataset_name) #pd.read_csv(os.path.join(DATA_DIR, 'test.csv'))
+def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrainingArguments = None):
+    dataset_test = pd.read_csv(data_args.test_dataset_name)
     model.eval()
     preds = []
 
@@ -156,7 +155,7 @@ def predict(model, tokenizer, train_args: TrainingArguments, data_args: DataTrai
     dataset_test['target'] = preds
 
     os.makedirs(train_args.output_dir, exist_ok=True)
-    dataset_test.to_csv(os.path.join(train_args.output_dir, 'predictions_5960.csv'), index=False)
+    dataset_test.to_csv(os.path.join(train_args.output_dir, 'predictions.csv'), index=False)
 
 if __name__ == '__main__':
     try:

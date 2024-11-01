@@ -5,7 +5,7 @@ import subprocess
 from datetime import datetime, timedelta
 
 # Get current time (UTC + 9 hours)
-current_time = datetime.utcnow() + timedelta(hours=9)
+current_time = datetime.now() + timedelta(hours=9)
 current_time_str = current_time.strftime('%Y%m%d_%H%M%S')
 
 # Root directory (adjust this if necessary)
@@ -42,6 +42,7 @@ subprocess.run([
     "--do_train",
     "--do_eval",
     "--overwrite_output_dir",
+    "--learning_rate", "2e-5",
     "--per_device_train_batch_size", "32",
     "--per_device_eval_batch_size", "32",
     "--run_name", run_name,

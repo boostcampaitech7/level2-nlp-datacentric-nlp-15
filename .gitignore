@@ -2,6 +2,8 @@
 data
 model
 output
+test
+
 src/__pycache__
 src/wandb
 models
