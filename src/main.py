@@ -9,6 +9,7 @@ import wandb
 import sys
 
 import torch
+torch.cuda.empty_cache()
 
 import evaluate
 import logging
@@ -84,8 +85,11 @@ def main(run_name):
 
     if train_args.do_train:
         model = train(model, data_train, data_valid, data_collator, train_args)
+
     if train_args.do_predict:
         predict(model, tokenizer, train_args, data_args)
+
+    torch.cuda.empty_cache()
 
 def train(model, data_train, data_valid, data_collator, train_args: TrainingArguments):
     # output_path = os.path.join(MODEL_DIR, run_name)
