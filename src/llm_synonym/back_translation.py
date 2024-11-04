@@ -10,15 +10,60 @@ from tqdm import tqdm
 
 # pip install bitsandbytes accelerate
 from transformers import AutoConfig, AutoModel, AutoTokenizer
+
 torch.cuda.empty_cache()
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from konlpy.tag import Okt
 
 parent_dir = os.path.dirname(os.getcwd())
 parent_dir = os.path.dirname(parent_dir)
 
-def exaone_synonym(dataset):
+
+def clean_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+    okt = Okt()
+    # remove "<|END_OF_TURN_TOKEN|>" from text
+    before = len(dataset)
+
+    dataset['text'] = dataset['text'].apply(lambda x: x.replace("<|END_OF_TURN|>", ""))
+
+    # drop row if "혼란스러워" in text
+    dataset = dataset[~dataset['text'].str.contains("혼란스러워")]
+
+    # use okt to seperate stem and lemma in last word
+    def post_process(text):
+        words = okt.pos(text)
+        last_word = words[-2][0] if words[-1][1] == 'Punctuation' else words[-1][0]
+        last_pos = words[-2][1] if words[-1][1] == 'Punctuation' else words[-1][1]
+
+        if last_pos == 'Verb':
+            # remove this last_word from text from backward
+            return text.replace(last_word, '', -1)
+
+        elif last_pos == 'Adjective':
+            # divide last word into stem and lemma
+            stem = okt.morphs(last_word, norm=True, stem=True)[0]
+            stem = stem.replace("있다", "")
+            stem = stem.replace("하다", "")
+
+            return text.replace(last_word, stem, -1)
+
+        else:
+            return text
+
+    dataset['text'] = dataset['text'].apply(post_process)
+    dataset['text'] = dataset['text'].apply(lambda x: x.replace(" .", "."))
+
+    after = len(dataset)
+
+    print(f"Before: {before}, After: {after}")
+    dataset.to_csv(os.path.join(parent_dir, 'data', 'train_8106_similar_2.csv'), index=False)
+
+    return dataset
+
+
+def exaone_synonym(dataset: pd.DataFrame):
     model = AutoModelForCausalLM.from_pretrained(
         "LGAI-EXAONE/EXAONE-3.0-7.8B-Instruct",
         torch_dtype=torch.bfloat16,
@@ -110,7 +155,8 @@ def exaone_synonym(dataset):
 
     dataset.to_csv(os.path.join(parent_dir, 'data', 'train_8130_similar.csv'), index=False)
 
-def aya_synonym(dataset):
+
+def aya_synonym(dataset: pd.DataFrame, save_every_k=1000):
     model = AutoModelForCausalLM.from_pretrained(
         "CohereForAI/aya-expanse-8b",
         torch_dtype=torch.bfloat16,
@@ -119,38 +165,15 @@ def aya_synonym(dataset):
     )
     tokenizer = AutoTokenizer.from_pretrained("CohereForAI/aya-expanse-8b")
 
-    prompt = ""
-    #prompt = "인공지능의 발전은 진보인가"
-    #prompt = "월드9U천재 사령탑 S시코 !'O오 감독 한국전R..."
-    #prompt = "A일!리c 산 _R법정=l 내 처리요"
-
-    messages = [
-        {"role": "user",
-         "content": f"다음 문장을 명사와 동사를 바꾼 비슷한 문장 1개로 바꿔줘 : \"{prompt}\""},
-    ]
-
-    # input_ids = tokenizer.apply_chat_template(
-    #     messages,
-    #     tokenize=True,
-    #     add_generation_prompt=True,
-    #     return_tensors="pt"
-    # )
-    # outputs = model.generate(
-    #     input_ids.to("cuda"),
-    #     eos_token_id=tokenizer.eos_token_id,
-    #     max_new_tokens=128,
-    #     temperature=0.2,
-    #     do_sample=True
-    # )
-    #
-    # outputs = tokenizer.decode(outputs[0])
-    # print(outputs)
-
     for i, elem in tqdm(enumerate(dataset['text'])):
+        if '손상되었습니다' in elem:
+            dataset.drop(i, inplace=True)
+            continue
+
         prompt = elem
         messages = [
             {"role": "user",
-             "content": f"다음 문장을 명사와 동사를 바꾼 비슷한 문장 1개로 바꿔줘 : \"{prompt}\""},
+             "content": f"다음 문장을 비슷한 동사와 형용사를 사용한 문장 1개로 바꿔줘. : \"{prompt}\""},
         ]
 
         input_ids = tokenizer.apply_chat_template(
@@ -171,36 +194,54 @@ def aya_synonym(dataset):
 
         length = len("<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>")
         chatbot_start = outputs.index("<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|>")
-        outputs = outputs[chatbot_start+length:]
 
-        # fine \" index and string between them
-        start = outputs.find("\"")
-        end = outputs.find("\"", start + 1)
+        outputs = outputs[chatbot_start + length:]
+        outputs = outputs.split('\n')
+        outputs = list(filter(None, outputs))
 
-        if start == -1 or end == -1:
-            if "**변경된 문장:** " in outputs:
-                sentences = outputs.split('\n\n')
-                changed = sentences[0].replace("**변경된 문장:** ", "")
-                print(f"B: {elem} -> A: {changed}")
-                dataset.loc[i, 'text'] = changed
+        # # fine \" index and string between them
+        # start = outputs.find("\"")
+        # end = outputs.find("\"", start + 1)
+        #
+        # if start == -1 or end == -1:
+        #     if "**변경된 문장:** " in outputs:
+        #         sentences = outputs.split('\n\n')
+        #         changed = sentences[0].replace("**변경된 문장:** ", "")
+        #         print(f"B: {elem} -> A: {changed}")
+        #         dataset.loc[i, 'text'] = changed
+        #
+        #     else:
+        #         continue
+        #
+        # else:
+        changed = outputs[0]
 
-            else:
-                continue
+        if "이해하기 어려운" in changed:
+            # drop this row from dataset
+            dataset.drop(i, inplace=True)
 
         else:
-            changed = outputs[start + 1:end]
+            changed = changed.replace("\"", "")
+            changed = changed.replace("**변경된 문장:** ", "")
+            changed = changed.replace("<|END_OF_TURN_TOKEN|>", "")
+            changed = changed.replace("**", "")
+
             print(f"B: {elem} -> A: {changed}")
             dataset.loc[i, 'text'] = changed
 
-    dataset.to_csv(os.path.join(parent_dir, 'data', 'train_8250_similar.csv'), index=False)
+        if i % save_every_k == 0:
+            dataset.to_csv(os.path.join(parent_dir, 'data', 'train_8106_similar.csv'), index=False)
 
+    dataset.to_csv(os.path.join(parent_dir, 'data', 'train_8106_similar.csv'), index=False)
+    return dataset
 
 if __name__ == "__main__":
     data_path = os.path.join(parent_dir, 'data', 'train_clustered_8130.csv')
     dataset = pd.read_csv(data_path)
 
     #exaone_synonym(dataset)
-    data_path = os.path.join(parent_dir, 'data', 'train_clustered_8250.csv')
+    data_path = os.path.join(parent_dir, 'data', 'train_8106_similar.csv')
     dataset = pd.read_csv(data_path)
 
-    aya_synonym(dataset)
+    #dataset = aya_synonym(dataset)
+    dataset = clean_dataset(dataset)
