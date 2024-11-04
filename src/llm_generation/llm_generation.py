@@ -67,12 +67,14 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
 
     # topic = list(set) -> set = ('topic_name', topic_count)
     top_topic, last_topic = data_analysis.func5(data)
-
+    topic_dict = {0: '생활문화', 1: '스포츠', 2: '정치', 3: '사회', 4: 'IT과학', 5: '경제', 6: '세계'}
     # shuffle last_topic
     n_label = len(last_topic)
-    k = 5
+    max_k = 40
+    k = 4
 
-    topic_list = []
+    topic_list_t = []
+    topic_list_l = []
 
     model = AutoModelForCausalLM.from_pretrained(
         "CohereForAI/aya-expanse-8b",
@@ -87,14 +89,27 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
         topic_list_ = last_topic_.axes[0].tolist()
         topic_list_ = list(filter(lambda x: len(x) > 1, topic_list_))
 
-        topic_list.append(topic_list_)
+        topic_list_l.append(topic_list_)
 
-    for i in range(n_of_gen):
+    # for last_topic_ in last_topic:
+    #     topic_list_ = last_topic_.axes[0].tolist()[:min(len(last_topic_), max_k)]
+    #     topic_list_ = list(filter(lambda x: len(x) > 1, topic_list_))
+    #
+    #     topic_list_t.append(topic_list_)
+
+    for i in tqdm(range(n_of_gen)):
         idx = i % n_label
 
         # shuffle and pick top k
-        random.shuffle(topic_list[idx])
-        topic_names = str(topic_list[idx][:k])
+        random.shuffle(topic_list_l[idx])
+        #random.shuffle(topic_list_t[idx])
+
+        this_topic = topic_list_l[idx][:k]
+        #this_topic.extend(topic_list_t[idx][:k])
+
+        random.shuffle(this_topic)
+
+        topic_names = str(this_topic)
 
         messages = [
             {"role": "user",
@@ -129,14 +144,14 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
         cleaned_array = [re.sub(r'^\d+\.\s*', '', item) for item in outputs]
         random.shuffle(cleaned_array)
 
-        print("\nOriginal Topic : ", topic_list[idx][:k], "-> New Topic : ")
+        #print(f"\nOriginal Topic - {topic_dict[idx]} : ", this_topic, "-> New Topic : ")
 
         # append k new data to dataset
         for topic_name in cleaned_array[:min(len(cleaned_array), 2)]:
             last_id += 1
             id_format = f"ynat-v1_train_{last_id}"
             data.loc[len(data)] = {'ID' : id_format, 'text': topic_name, 'target': idx}
-            print(topic_name, end=' ')
+            #print(topic_name, end=', ')
 
         if i % save_every == 0:
             data.to_csv(os.path.join(parent_dir, 'data', f'train_7500_aug_1_{time_now}.csv'), index=False)
@@ -145,6 +160,6 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
     return data
 
 if __name__ == "__main__":
-    data_path = os.path.join(parent_dir, 'data', 'train_total_ht_jj_jjaug_7500.csv')
+    data_path = os.path.join(parent_dir, 'data', 'train_7500_aug_1.csv')
     dataset = pd.read_csv(data_path)
     data = choose_topic(dataset)

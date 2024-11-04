@@ -57,7 +57,7 @@ def func5(train_data : pd.DataFrame):
     label_nouns_list, least_label_nouns_list, = [], []
 
     def extract_nouns(text):
-        return okt.nouns(text)
+        return okt.nouns(text) if isinstance(text, str) else []
 
     for label in range(n_labels):
         label_data = train_data[train_data['target'] == label].copy()
