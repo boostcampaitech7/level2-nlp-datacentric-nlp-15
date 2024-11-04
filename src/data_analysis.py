@@ -9,6 +9,10 @@ import pandas as pd
 train_data = pd.read_csv(data_path_train)
 test_data = pd.read_csv(data_path_test)
 
+import matplotlib.pyplot as plt
+from konlpy.tag import Okt
+from collections import defaultdict
+
 def func1():
     # save csv as utf-8
     new_data_path = os.path.join(parent_dir, 'data', 'train_utf16.csv')
@@ -44,6 +48,86 @@ def func4():
 
     print(train_data['korean_char_count'].describe())
 
+def func5():
+    data_path = os.path.join(parent_dir, 'data', 'train_total_ht_jj_jjaug_7500.csv')
+
+    # show label distribution with pandas and plt
+    # sort with label value counts
+    train_data = pd.read_csv(data_path)
+    label_counts = train_data['target'].value_counts().sort_index()
+    label_counts.plot(kind='bar', title='Label Distribution')
+
+    # get top-K nouns for each target label and show in pandas dataframe
+    text = ""
+    okt = Okt()
+    top_k = 50
+    n_labels = len(label_counts)
+
+    def extract_nouns(text):
+        return okt.nouns(text)
+
+    for label in range(n_labels):
+        label_data = train_data[train_data['target'] == label].copy()
+        label_data.loc[:, 'nouns'] = label_data['text'].apply(extract_nouns)
+
+        label_nouns = label_data['nouns'].sum()
+        label_nouns = pd.Series(label_nouns)
+        label_nouns, least_label_nouns = label_nouns.value_counts().head(top_k), label_nouns.value_counts().sort_values(ascending=True).head(top_k)
+
+        text += f"Label {label} Top {top_k} Nouns\n"
+        text += str(label_nouns) + '\n\n'
+        text += f"Label {label} Least {top_k} Nouns\n"
+        text += str(least_label_nouns) + '\n\n'
+
+    #plt.show()
+    # write txt file
+    with open(os.path.join(parent_dir, 'data', 'label_nouns.txt'), 'w', encoding='utf-8') as f:
+        f.write(text)
+
+
+def func6():
+    data_path = os.path.join(parent_dir, 'data', 'train_total_ht_jj_jjaug_7500.csv')
+    okt = Okt()
+    label_nouns = defaultdict(set)
+    noun_dict = dict()
+
+    train_data = pd.read_csv(data_path)
+
+    # 각 텍스트에서 명사 추출 및 라벨별로 저장
+    for _, row in train_data.iterrows():
+        text = row['text']
+        label = row['target']
+        nouns = set(okt.nouns(text))  # 중복 제거를 위해 set 사용
+        label_nouns[label].update(nouns)
+
+        for noun in nouns:
+            if noun in noun_dict:
+                noun_dict[noun] += 1
+            else:
+                noun_dict[noun] = 1
+
+    # 2개 이상의 라벨에서 공통으로 발견된 명사 찾기
+    common_nouns = defaultdict(list)
+    all_nouns = set()
+
+    for nouns in label_nouns.values():
+        all_nouns.update(nouns)
+
+    for noun in all_nouns:
+        c_noun = sum(1 for label_set in label_nouns.values() if noun in label_set)
+        common_nouns[c_noun].append([noun, noun_dict[noun]])
+
+    text = ""
+    # 결과 출력
+    for i in range(2, len(label_nouns) + 1):
+        text += f"라벨 {i}개에서 공통으로 발견된 명사\n"
+        text += ''.join(str(sorted(common_nouns[i], key=lambda x:-x[-1]))) + "\n\n"
+
+    with open(os.path.join(parent_dir, 'data', 'common_nouns.txt'), 'w', encoding='utf-8') as f:
+        f.write(text)
+
 #func2()
 #func3()
-func4()
+#func4()
+#func5()
+func6()

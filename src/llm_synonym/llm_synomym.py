@@ -27,8 +27,6 @@ def clean_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
     before = len(dataset)
 
     dataset['text'] = dataset['text'].apply(lambda x: x.replace("<|END_OF_TURN|>", ""))
-
-    # drop row if "혼란스러워" in text
     dataset = dataset[~dataset['text'].str.contains("혼란스러워")]
 
     # use okt to seperate stem and lemma in last word
