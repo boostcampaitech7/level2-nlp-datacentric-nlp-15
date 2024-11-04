@@ -122,6 +122,7 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
             add_generation_prompt=True,
             return_tensors="pt"
         )
+
         outputs = model.generate(
             input_ids.to("cuda"),
             eos_token_id=tokenizer.eos_token_id,
@@ -141,6 +142,7 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
         outputs = outputs.split('\n')[1:]
         outputs.remove('')
 
+        # {0: '생활문화', 1: '스포츠', 2: '정치', 3: '사회', 4: 'IT과학', 5: '경제', 6: '세계'}
         cleaned_array = [re.sub(r'^\d+\.\s*', '', item) for item in outputs]
         random.shuffle(cleaned_array)
 
@@ -160,6 +162,6 @@ def choose_topic(data: pd.DataFrame, n_of_gen=1000, save_every=100) -> pd.DataFr
     return data
 
 if __name__ == "__main__":
-    data_path = os.path.join(parent_dir, 'data', 'train_7500_aug_1.csv')
+    data_path = os.path.join(parent_dir, 'data', 'train_8255_denoise.csv')
     dataset = pd.read_csv(data_path)
     data = choose_topic(dataset)
