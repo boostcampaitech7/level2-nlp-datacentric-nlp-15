@@ -48,6 +48,7 @@ subprocess.run([
     "--run_name", run_name,
 ], check=True)
 
+#train_dir = os.path.join(root_dir, 'models', f'train_8315_kmeans_trunc_20241105_230019')
 # Perform prediction (inference)
 subprocess.run([
     "python", "main.py",

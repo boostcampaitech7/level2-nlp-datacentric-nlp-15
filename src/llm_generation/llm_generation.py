@@ -18,7 +18,6 @@ from src import data_analysis
 parent_dir = os.path.dirname(os.getcwd())
 parent_dir = os.path.dirname(parent_dir)
 
-
 def clean_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
     okt = Okt()
     # remove "<|END_OF_TURN_TOKEN|>" from text

@@ -5,7 +5,7 @@ import pandas as pd
 
 # open csv file as pandas dataframe
 import pandas as pd
-
+import re
 import matplotlib.pyplot as plt
 from konlpy.tag import Okt
 from collections import defaultdict
@@ -31,9 +31,8 @@ def func3(train_data : pd.DataFrame):
     random_sample = train_data.sample(random_sample_200)
     random_sample.to_csv(os.path.join(parent_dir, 'data', 'train_sample_200.csv'), index=False)
 
-def func4(train_data : pd.DataFrame):
+def show_n_of_letters(train_data : pd.DataFrame):
     # this function reads train csv text and show how many korean characters are in the text
-    import re
     korean_char = re.compile('[가-힣]')
     train_data['korean_char_count'] = train_data['text'].apply(lambda x: len(korean_char.findall(x)))
 
@@ -45,6 +44,19 @@ def func4(train_data : pd.DataFrame):
 
     print(train_data['korean_char_count'].describe())
 
+def drop_n_of_letters(data : pd.DataFrame, less=13, more=30):
+    # drop row that has less than 10 korean characters or more than 35 korean characters
+    korean_char = re.compile('[가-힣]')
+    train_data['korean_char_count'] = train_data['text'].apply(lambda x: len(korean_char.findall(x)))
+
+    # show in pandas dataframe bar plot
+    data = data[(data['korean_char_count'] >= less) & (data['korean_char_count'] <= more)]
+    data = data.drop(columns=['korean_char_count'])
+
+    #data.to_csv(os.path.join(parent_dir, 'data', f'train_drop_{less}_{more}.csv'), index=False)
+
+    return data
+
 def func5(train_data : pd.DataFrame):
     label_counts = train_data['target'].value_counts().sort_index()
     label_counts.plot(kind='bar', title='Label Distribution')
@@ -52,12 +64,13 @@ def func5(train_data : pd.DataFrame):
     # get top-K nouns for each target label and show in pandas dataframe
     text = ""
     okt = Okt()
-    top_k = 50
-    n_labels = len(label_counts)
+    top_k = 100
+    n_labels = 7
     label_nouns_list, least_label_nouns_list, = [], []
 
     def extract_nouns(text):
-        return okt.nouns(text) if isinstance(text, str) else []
+        nouns = okt.nouns(text) if isinstance(text, str) else []
+        return nouns
 
     for label in range(n_labels):
         label_data = train_data[train_data['target'] == label].copy()
@@ -65,23 +78,49 @@ def func5(train_data : pd.DataFrame):
 
         label_nouns = label_data['nouns'].sum()
         label_nouns = pd.Series(label_nouns)
+
+        if len(label_nouns) == 1:
+            continue
+
+        # nouns should be count if length of noun is more than 2
+        label_nouns = label_nouns[label_nouns.str.len() > 1]
+
         label_nouns, least_label_nouns = label_nouns.value_counts(), label_nouns.value_counts().sort_values(ascending=True)
 
-        # text += f"Label {label} Top {top_k} Nouns\n"
-        # text += str(label_nouns[:top_k]) + '\n\n'
-        # text += f"Label {label} Least {top_k} Nouns\n"
-        # text += str(least_label_nouns[:top_k]) + '\n\n'
+        text += f"Label {label} Top {top_k} Nouns\n"
+        text += str(label_nouns[:top_k]) + '\n\n'
+        text += f"Label {label} Least {top_k} Nouns\n"
+        text += str(least_label_nouns[:top_k]) + '\n\n'
 
         label_nouns_list.append(label_nouns)
         least_label_nouns_list.append(least_label_nouns)
 
     #plt.show()
     # write txt file
-    # with open(os.path.join(parent_dir, 'data', 'label_nouns.txt'), 'w', encoding='utf-8') as f:
-    #     f.write(text)
+    with open(os.path.join(parent_dir, 'data', '8319_label_nouns.txt'), 'w', encoding='utf-8') as f:
+        f.write(text)
 
     return label_nouns_list, least_label_nouns_list
 
+def func_target_distribution(train_data : pd.DataFrame):
+    label_counts = train_data['target'].value_counts().sort_index()
+    label_counts.plot(kind='bar', title='Label Distribution')
+
+    plt.show()
+
+def func_truncate_rows(train_data : pd.DataFrame):
+    label_counts = train_data['target'].value_counts().sort_index()
+    min_label_count = label_counts.min()
+
+    train_data = train_data.groupby('target').apply(lambda x: x.sample(min_label_count)).reset_index(drop=True)
+
+    label_counts = train_data['target'].value_counts().sort_index()
+    label_counts.plot(kind='bar', title='Label Distribution')
+
+    plt.show()
+
+    #train_data.to_csv(os.path.join(parent_dir, 'data', 'train_truncated.csv'), index=False)
+    return train_data
 
 def func6(train_data : pd.DataFrame):
     okt = Okt()
@@ -112,25 +151,111 @@ def func6(train_data : pd.DataFrame):
         c_noun = sum(1 for label_set in label_nouns.values() if noun in label_set)
         common_nouns[c_noun].append([noun, noun_dict[noun]])
 
+    # 모든 명사는 최소 2글자 이상
+    common_nouns = {k: v for k, v in common_nouns.items() if k >= 2}
+
     text = ""
     # 결과 출력
     for i in range(2, len(label_nouns) + 1):
         text += f"라벨 {i}개에서 공통으로 발견된 명사\n"
         text += ''.join(str(sorted(common_nouns[i], key=lambda x:-x[-1]))) + "\n\n"
 
-    with open(os.path.join(parent_dir, 'data', 'common_nouns.txt'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(parent_dir, 'data', '8319_common_nouns.txt'), 'w', encoding='utf-8') as f:
         f.write(text)
+
+    return train_data
+
+def func_concat(data1 : pd.DataFrame, data2 : pd.DataFrame):
+    return pd.concat([data1, data2])
+
+def func_drop_label(data : pd.DataFrame, label_num : int, drop_ratio : float):
+    survived = data[data['target'] == label_num].sample(frac=drop_ratio)
+    new = data[data['target'] != label_num]
+    time_now = pd.Timestamp.now().strftime('%m%d_%H%M%S')
+
+    new = pd.concat([new, survived])
+    #new.to_csv(os.path.join(parent_dir, 'data', f'drop{label_num}_{time_now}.csv'), index=False)
+    return new
+
+def shuffle(data : pd.DataFrame):
+    return data.sample(frac=1).reset_index(drop=True)
+
+def save_csv(data : pd.DataFrame, file_name : str):
+    data.to_csv(os.path.join(parent_dir, 'data', file_name), index=False)
+
+def trim_col(data : pd.DataFrame):
+    # remove colum that is not 'ID', 'text', 'target'
+    return data[['ID', 'text', 'target']]
+
+def trim_text(data : pd.DataFrame):
+    # remove row that has chinesses characters 50% more than korean characters
+    korean_char = re.compile('[가-힣]')
+    chinese_char = re.compile('[\u4e00-\u9fff]')
+
+    data['korean_char_count'] = data['text'].apply(lambda x: len(korean_char.findall(x)))
+    data['chinese_char_count'] = data['text'].apply(lambda x: len(chinese_char.findall(x)))
+
+    data = data[(data['chinese_char_count'] / data['korean_char_count']) < 0.5]
+
+    # remove special chars
+    data['text'] = data['text'].str.replace('[^가-힣0-9a-zA-Z\s,.]', '', regex=True)
+    data = data.drop(columns=['korean_char_count', 'chinese_char_count'])
+
+    return data
+
+def remove_ambiguous_nouns(data : pd.DataFrame, removal : pd.DataFrame):
+    # remove ambiguous nouns
+    before = len(data)
+    ambiguous_nouns = removal['noun'].tolist()
+
+    escaped_nouns = [re.escape(noun) for noun in ambiguous_nouns]
+
+    # 2. 각 텍스트에서 모호한 명사의 개수를 세어 2개 이상 포함된 경우만 제거
+    pattern = '|'.join(escaped_nouns)
+    data['ambiguous_count'] = data['text'].str.count(pattern)
+
+    # 3. 두 개 이상의 모호한 명사가 있는 행만 제거
+    data = data[data['ambiguous_count'] < 2].drop(columns=['ambiguous_count'])
+
+    after = len(data)
+
+    print(f"Before: {before}, After: {after}")
+    return data
+
+def save_ambiguous_nouns(data : pd.DataFrame, removal : pd.DataFrame):
+    # save ambiguous nouns
+    ambiguous_nouns = removal['noun'].tolist()
+
+    # get all the row that has ambiguous nouns
+    ambiguous_data = data[data['text'].str.contains('|'.join(ambiguous_nouns))]
+
+    ambiguous_data.to_csv(os.path.join(parent_dir, 'data', '8515_ambiguous_sentences.csv'), index=False)
 
 if __name__ == "__main__":
     parent_dir = os.path.dirname(os.getcwd())
-    data_path_train = os.path.join(parent_dir, 'data', 'train.csv')
+    data_path_train = os.path.join(parent_dir, 'data', 'train_8515_vanilla.csv')
+    data_path_concat = os.path.join(parent_dir, 'data', 'nanoised.csv')
     data_path_test = os.path.join(parent_dir, 'data', 'test.csv')
 
     train_data = pd.read_csv(data_path_train)
+    concat_data = pd.read_csv(data_path_concat)
     test_data = pd.read_csv(data_path_test)
 
-    #func2()
-    #func3()
-    #func4()
-    func5(train_data)
-    #func6()
+    train_data = trim_text(train_data)
+
+    # show_n_of_letters(train_data)
+    # train_data = drop_n_of_letters(train_data, 10, 30)
+    # #train_data = func_truncate_rows(train_data)
+    #
+    # # func5(train_data)
+    # # func6(train_data)
+    #
+    # ambiguous = pd.read_csv(os.path.join(parent_dir, 'data', 'ambiguous_nouns_15000_2.csv'))
+    # #save_ambiguous_nouns(train_data, ambiguous)
+    # train_data = remove_ambiguous_nouns(train_data, ambiguous)
+    #
+    # #train_data = func_concat(train_data, concat_data)
+    #
+    # train_data = trim_col(train_data)
+    # train_data = shuffle(train_data)
+    save_csv(train_data, 'train_8515_vanilla_trimmed.csv')

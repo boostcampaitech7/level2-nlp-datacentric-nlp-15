@@ -39,6 +39,7 @@ def set_seed(seed: int = 456):
 SEED = 2024
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+parent_dir = os.path.dirname(os.getcwd())
 
 def main(run_name):
     parser = HfArgumentParser(
@@ -79,6 +80,10 @@ def main(run_name):
     data = pd.read_csv(data_args.dataset_name) #pd.read_csv(os.path.join(DATA_DIR, 'train.csv'))
     dataset_train, dataset_valid = train_test_split(data, test_size=model_args.train_test_split, random_state=SEED)
 
+    # Validation data
+    # data_v = pd.read_csv(os.path.join(parent_dir, 'data', 'train_15000_8515.csv'))
+    # _, dataset_valid = train_test_split(data_v, test_size=0.3, random_state=SEED)
+
     data_train = BERTDataset(dataset_train, tokenizer, data_args)
     data_valid = BERTDataset(dataset_valid, tokenizer, data_args)
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
@@ -92,8 +97,6 @@ def main(run_name):
     torch.cuda.empty_cache()
 
 def train(model, data_train, data_valid, data_collator, train_args: TrainingArguments):
-    # output_path = os.path.join(MODEL_DIR, run_name)
-
     training_args = TrainingArguments(
         output_dir=train_args.output_dir,
         overwrite_output_dir=True,
