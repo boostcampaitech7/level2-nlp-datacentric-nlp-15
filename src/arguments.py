@@ -11,7 +11,7 @@ class ModelArguments:
         default='klue/bert-base'
     )
     train_test_split: Optional[float] = field(
-        default=0.25,
+        default=0.3,
         metadata={
             "help": "test_size"
         },
@@ -24,7 +24,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        default="../data/train_8515_vanilla_trimmed.csv",
+        default="../data/train_8548_vanila.csv",
         metadata={
             "help": "The name of the dataset to use."
         },

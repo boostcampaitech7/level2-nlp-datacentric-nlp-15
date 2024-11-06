@@ -97,7 +97,7 @@ def func5(train_data : pd.DataFrame):
 
     #plt.show()
     # write txt file
-    with open(os.path.join(parent_dir, 'data', '8319_label_nouns.txt'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(parent_dir, 'data', '8525_label_nouns.txt'), 'w', encoding='utf-8') as f:
         f.write(text)
 
     return label_nouns_list, least_label_nouns_list
@@ -160,7 +160,7 @@ def func6(train_data : pd.DataFrame):
         text += f"라벨 {i}개에서 공통으로 발견된 명사\n"
         text += ''.join(str(sorted(common_nouns[i], key=lambda x:-x[-1]))) + "\n\n"
 
-    with open(os.path.join(parent_dir, 'data', '8319_common_nouns.txt'), 'w', encoding='utf-8') as f:
+    with open(os.path.join(parent_dir, 'data', '8525_common_nouns.txt'), 'w', encoding='utf-8') as f:
         f.write(text)
 
     return train_data
@@ -199,6 +199,8 @@ def trim_text(data : pd.DataFrame):
 
     # remove special chars
     data['text'] = data['text'].str.replace('[^가-힣0-9a-zA-Z\s,.]', '', regex=True)
+    data['text'] = data['text'].str.replace('   ', ' ', regex=True)
+    data['text'] = data['text'].str.replace('  ', ' ', regex=True)
     data = data.drop(columns=['korean_char_count', 'chinese_char_count'])
 
     return data
@@ -215,11 +217,29 @@ def remove_ambiguous_nouns(data : pd.DataFrame, removal : pd.DataFrame):
     data['ambiguous_count'] = data['text'].str.count(pattern)
 
     # 3. 두 개 이상의 모호한 명사가 있는 행만 제거
-    data = data[data['ambiguous_count'] < 2].drop(columns=['ambiguous_count'])
+    data = data[data['ambiguous_count'] == 0].drop(columns=['ambiguous_count'])
 
     after = len(data)
 
-    print(f"Before: {before}, After: {after}")
+    print(f"Before AMB: {before}, After AMB: {after}")
+    return data
+
+def add_safe_nouns(data : pd.DataFrame, add : pd.DataFrame):
+    # remove all rows that doesnt have safe nouns, safe nouns are at add dataframe
+    before = len(data)
+
+    safe_nouns = add['noun'].tolist()
+    escaped_nouns = [re.escape(noun) for noun in safe_nouns]
+
+    pattern = '|'.join(escaped_nouns)
+    data['safe_count'] = data['text'].str.count(pattern)
+
+    data = data[data['safe_count'] > 1].drop(columns=['safe_count'])
+
+    # check each row of data and get safe nouns, then switch target col value as safe noun's target value
+    for noun in safe_nouns:
+        data.loc[data['text'].str.contains(noun), 'target'] = add.loc[add['noun'] == noun, 'target'].values[0]
+
     return data
 
 def save_ambiguous_nouns(data : pd.DataFrame, removal : pd.DataFrame):
@@ -233,29 +253,34 @@ def save_ambiguous_nouns(data : pd.DataFrame, removal : pd.DataFrame):
 
 if __name__ == "__main__":
     parent_dir = os.path.dirname(os.getcwd())
-    data_path_train = os.path.join(parent_dir, 'data', 'train_8515_vanilla.csv')
+    data_path_train = os.path.join(parent_dir, 'data', 'train_8548_vanila.csv')
     data_path_concat = os.path.join(parent_dir, 'data', 'nanoised.csv')
     data_path_test = os.path.join(parent_dir, 'data', 'test.csv')
+    data_path_safe_nouns = os.path.join(parent_dir, 'data', 'true_nouns_8548_1.csv')
 
     train_data = pd.read_csv(data_path_train)
     concat_data = pd.read_csv(data_path_concat)
     test_data = pd.read_csv(data_path_test)
+    ambiguous = pd.read_csv(os.path.join(parent_dir, 'data', 'ambiguous_nouns_8548_1.csv'))
+    safe_data = pd.read_csv(data_path_safe_nouns)
 
+    concat_data = trim_text(concat_data)
     train_data = trim_text(train_data)
 
-    # show_n_of_letters(train_data)
-    # train_data = drop_n_of_letters(train_data, 10, 30)
-    # #train_data = func_truncate_rows(train_data)
-    #
-    # # func5(train_data)
-    # # func6(train_data)
-    #
-    # ambiguous = pd.read_csv(os.path.join(parent_dir, 'data', 'ambiguous_nouns_15000_2.csv'))
-    # #save_ambiguous_nouns(train_data, ambiguous)
-    # train_data = remove_ambiguous_nouns(train_data, ambiguous)
-    #
-    # #train_data = func_concat(train_data, concat_data)
+    #concat_data = add_safe_nouns(concat_data, safe_data)
+
+    show_n_of_letters(train_data)
+    train_data = drop_n_of_letters(train_data, 5, 35)
+
+    # func5(train_data)
+    # func6(train_data)
+
+    #train_data = remove_ambiguous_nouns(train_data, ambiguous)
+    # train_data = func_concat(train_data, concat_data)
+    # #
+    # # #train_data = func_concat(train_data, concat_data)
+    # #
     #
     # train_data = trim_col(train_data)
     # train_data = shuffle(train_data)
-    save_csv(train_data, 'train_8515_vanilla_trimmed.csv')
+    save_csv(train_data, 'train_8548_vanilla_trimmed_1.csv')
