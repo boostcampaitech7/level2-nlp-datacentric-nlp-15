@@ -24,7 +24,7 @@ class DataTrainingArguments:
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
     dataset_name: Optional[str] = field(
-        default="../data/nanoised_filtered_aug3.csv",
+        default="../data/train.csv",
         metadata={
             "help": "The name of the dataset to use."
         },

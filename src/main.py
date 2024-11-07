@@ -35,7 +35,7 @@ def set_seed(seed: int = 456):
     torch.backends.cudnn.benchmark = False
     torch.use_deterministic_algorithms(True)
 
-SEED = 2024
+SEED = 23456
 set_seed(SEED)
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
