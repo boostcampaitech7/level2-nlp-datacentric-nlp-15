@@ -48,28 +48,27 @@
 
 ## 🏃 프로젝트
 ### 🖥️ 프로젝트 개요
-|개요| 설명 |
-|:------:| --- |
-| 주제 | 데이터 품질 개선을 통한 뉴스 기사 분류 성능 향상 |
-| 목표 | 노이즈 제거, 데이터 증강 등을 통한 F1 Score 개선 |
-| 평가 지표 | Macro F1 Score |
+<div align='center'>
+
+|개요| 설명                                 |
+|:------:|------------------------------------|
+| 주제 | 데이터 품질 개선을 통한 뉴스 기사 분류 성능 향상       |
+| 목표 | 노이즈 제거, 데이터 증강 등을 통한 F1 Score 개선   |
+| 평가 지표 | Macro F1 Score                     |
 | 개발 환경 | Python 3.10, PyTorch, Transformers |
-| 협업 환경 | GitHub, Notion, Slack, W&B |
+| 협업 환경 | GitHub, Notion, Slack, W&B         |
+</div>
 
 ### 📅 프로젝트 타임라인
 - 프로젝트는 2024.10.28 - 2024.11.07 (총 11일)
 ![image](https://github.com/user-attachments/assets/4e017529-dbc7-4cd3-80ca-b8ca23c2296d)
 
-
 <div align='center'>
-
-
-
 </div>
 
 ### 🕵️ 프로젝트 진행
 - 프로젝트를 진행하며 단계별로 실험하여 적용한 내용들을 아래와 같습니다.
-
+<div align='center'>
 
 |  프로세스   | 설명 |
 |:-------:| --- |
@@ -79,18 +78,21 @@
 | 클러스터링 | GMM, K-Means 활용한 오라벨 데이터 보정 |
 | LLM 선정  | 1. EXAONE-3.0-7.8B-Instruct (KoMT 벤치마크 고성능)<br>2. aya-expanse-8b (Arena-Hard 벤치마크 고성능)<br>3. ko-gemma-2-9b-it (Horangi Leaderboard 고성능) |
 
+</div>
+
 ### 📊 Dataset
 - 데이터 증강 및 정제 과정을 통해 원본 데이터에서 고품질의 최종 데이터셋을 구축했습니다.
+<div align='center'>
 
 |단계| 설명 |크기|
 |:-------------------:| --- |---|
 | Raw Data | 원본 데이터 (노이즈 1,600개 포함) | 2,800개 |
 | Final Dataset | LLM 기반 노이즈 제거, 데이터 증강, 역번역, 클러스터링 보정을 통해 구축된 최종 데이터 | 15,780개 |
+</div>
 
 
 ## 📁 프로젝트 구조
 프로젝트 폴더 구조는 다음과 같습니다.
-
 ```
 level2-datacentric-nlp-15
 ├── data
@@ -124,23 +126,25 @@ level2-datacentric-nlp-15
       └── post_processing.ipynb
 ```
 
+
+## 📦 src 폴더 구조 설명
 ```
-### 📦 src 폴더 구조 설명
 • arguments.py : 데이터 증강을 하는 파일
 • main.py : 모델 train, eval, prediction 을 수행하는 파일
 • model.py : 입력 텍스트와 레이블 데이터를 BERT 모델 학습에 맞게 토크나이즈하고 텐서 형식으로 변환해주는 PyTorch Dataset 구현한 파일
-• back_translation/back_translation.ipynb : 역번역 테스크을 수행하는 파일 
-• clustering/clustering.ipynb : 클러스터링 테스크를 수행하는 파일
-• LLM_noise_tasks/char_filter.py : 불필요한 noise 데이터를 전/후 처리하는 파일
-• LLM_noise_tasks/LLM_aug.ipynb : LLM 을 활용한 데이터 생성, 증강을 수행하는 파일
-• LLM_noise_tasks/LLM_cleaning_noise.ipynb : LLM 을 활용한 noise를 판별하고 denoise을 수행하는 파일
-• LLM_noise_tasks/LLM_label_filtering.ipynb : LLM 을 활용해서 텍스트들의 주제를 뽑고 재-라벨링, 생성을 수행하는 파일
-• noun_removal/noun_analysis.py : 단어의 빈도를 분석하여서 데이터를 정제하여 개선을 수행하는 파일
-• post_processing_cleanlab/post_processing.ipynb : cleanlab 을 활용하여서 데이터를 정제, 제거를 수행하는 파일
+• back_translation.ipynb : 역번역 테스크을 수행하는 파일 
+• clustering.ipynb : 클러스터링 테스크를 수행하는 파일
+• char_filter.py : 불필요한 noise 데이터를 전/후 처리하는 파일
+• LLM_aug.ipynb : LLM 을 활용한 데이터 생성, 증강을 수행하는 파일
+• LLM_cleaning_noise.ipynb : LLM 을 활용한 noise를 판별하고 denoise을 수행하는 파일
+• LLM_label_filtering.ipynb : LLM 을 활용해서 텍스트들의 주제를 뽑고 재-라벨링, 생성을 수행하는 파일
+• noun_analysis.py : 단어의 빈도를 분석하여서 데이터를 정제하여 개선을 수행하는 파일
+• post_processing.ipynb : cleanlab 을 활용하여서 데이터를 정제, 제거를 수행하는 파일
 ```
 
+
+## 📦 Installation
 ```
-### 📦 Installation
 - python=3.10 환경에서 requirements.txt를 pip로 install 합니다. (pip install -r requirements.txt)
 - python run.py를 입력하여 프로그램을 실행합니다.
 ```
