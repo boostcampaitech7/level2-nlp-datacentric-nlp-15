@@ -1,6 +1,6 @@
 <div align='center'>
 
-  # 🏆 LV.2 NLP 프로젝트 : Data-Centric NLP 'Text Multi-Classification'
+  # 🏆 LV.2 NLP 프로젝트 : '주제 분류 프로젝트'
 
 </div>
 
@@ -11,17 +11,17 @@
 |:------:| --- |
 | 대회 주제 | 데이터 중심 자연어처리 대회 - 데이터 품질 개선을 통한 성능 향상 |
 | 대회 설명 | 모델 구조 변경 없이 데이터 품질 개선만으로 분류 성능을 향상시키는 대회 |
-| 데이터 구성 | 원본 데이터: 2,800개 (노이즈 1,600개, 오라벨링 1,000개 포함) |
+| 데이터 구성 | 원본 데이터: 2,800개 (노이즈 1,600개, 오라벨링 1,000개, 정상 데이터 200개) |
 | 평가 지표 | Macro F1 Score |
 
 </div>
 
 ## 🎖️ Leader Board
-###  Public Leader Board 
+### 🥇 Public Leader Board (1위)
 ![image](https://github.com/user-attachments/assets/77b4b9df-6a6e-4cbc-a2c4-2acc1fdcb78b)
 
 
-###  Private Leader Board 
+### 🥇 Private Leader Board (1위)
 ![image](https://github.com/user-attachments/assets/fa5d5d30-8ed0-4755-bc41-6ad0b72d751c)
 
 
@@ -54,8 +54,8 @@
 
 |개요| 설명                                 |
 |:------:|------------------------------------|
-| 주제 | 데이터 품질 개선을 통한 뉴스 기사 분류 성능 향상       |
-| 목표 | 노이즈 제거, 데이터 증강 등을 통한 F1 Score 개선   |
+| 주제 | 데이터 품질 개선을 통한 뉴스 기사 주제 분류 성능 향상 |
+| 목표 | 노이즈 제거, 데이터 증강 등을 통한 F1 Score 개선 |
 | 평가 지표 | Macro F1 Score                     |
 | 개발 환경 | Python 3.10, PyTorch, Transformers |
 | 협업 환경 | GitHub, Notion, Slack, W&B         |
@@ -78,7 +78,7 @@
 | 전처리   | LLM 기반 노이즈 제거, 명사 기반 중복 데이터 제거 |
 | 증강     | LLM을 활용한 데이터 증강, DeepL API를 활용한 역번역 |
 | 클러스터링 | GMM, K-Means 활용한 오라벨 데이터 보정 |
-| LLM 선정  | 1. EXAONE-3.0-7.8B-Instruct (KoMT 벤치마크 고성능)<br>2. aya-expanse-8b (Arena-Hard 벤치마크 고성능)<br>3. ko-gemma-2-9b-it (Horangi Leaderboard 고성능) |
+| LLM 선정  | 1. EXAONE-3.0-7.8B-Instruct (KoMT 벤치마크 고성능)<br>2. aya-expanse-8b (m-ArenaHard 벤치마크 고성능)<br>3. ko-gemma-2-9b-it (Horangi Leaderboard 고성능) |
 
 </div>
 
