@@ -5,6 +5,7 @@
 </div>
 
 ## ✏️ 대회 소개
+<div align='center'>
 
 | 특징     | 설명 |
 |:------:| --- |
@@ -13,6 +14,7 @@
 | 데이터 구성 | 원본 데이터: 2,800개 (노이즈 1,600개, 오라벨링 1,000개 포함) |
 | 평가 지표 | Macro F1 Score |
 
+</div>
 
 ## 🎖️ Leader Board
 ###  Public Leader Board 
