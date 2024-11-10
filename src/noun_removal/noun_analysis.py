@@ -2,7 +2,6 @@ import os
 import pandas as pd
 from konlpy.tag import Okt
 from collections import defaultdict
-import matplotlib.pyplot as plt
 
 import matplotlib
 matplotlib.rcParams['font.family'] ='Malgun Gothic'
@@ -17,7 +16,6 @@ df = pd.read_csv(dataset_path)
 # 2. 명사 추출
 okt = Okt()
 noun_dict = defaultdict(lambda: {'count': 0, 'targets': set(), 'each_target_count': defaultdict(int)})
-k_dict = {0 : '생활문화', 1 : '스포츠', 2 : '정치', 3 : '사회', 4 : 'IT과학', 5 : '경제', 6 : '세계'}
 k_dict = {0 : '0', 1 : '1', 2 : '2', 3 : '3', 4 : '4', 5 : '5', 6 : '6'}
 v_dict = {v: k for k, v in k_dict.items()}
 
