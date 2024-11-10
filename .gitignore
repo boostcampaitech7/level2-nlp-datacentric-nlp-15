@@ -8,7 +8,5 @@ src/__pycache__
 src/wandb
 models
 
-
-*.ipynb
 *.pyc
 *.tar.gz
