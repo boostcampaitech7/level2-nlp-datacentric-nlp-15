@@ -36,11 +36,11 @@
 
 |팀원   | 역할 |
 |------| --- |
-| 김진재 |  |
-| 박규태 |  |
-| 윤선웅 |  |
-| 이정민 |  |
-| 임한택 |  |
+| 김진재 |Clustering​, Data Augmentation​, LLM Relabeling  |
+| 박규태 |EDA​, Data Denoise​, Data Augmentation​, LLM Relabeling​  |
+| 윤선웅 |Data Augmentation​, Clustering​, LLM Relabeling |
+| 이정민 |Data Denoise​, Noun Removal​, Clustering​  |
+| 임한택 |Data Denoise​, Back Translation​, Data Augmentation  |
 </div>
 
 
