@@ -7,8 +7,8 @@ import matplotlib
 matplotlib.rcParams['font.family'] ='Malgun Gothic'
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-parent_dir = os.path.dirname(os.getcwd())
-dataset_path = os.path.join(parent_dir, 'data', 'train_8525_15000_cleanlab.csv')
+parent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+dataset_path = os.path.join(parent_dir, 'data', '')
 
 # 1. 데이터 로드 및 전처리
 df = pd.read_csv(dataset_path)
