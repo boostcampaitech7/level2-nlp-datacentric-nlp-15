@@ -1,6 +1,5 @@
 import re
 import pandas as pd
-
 def filter_sentences(sentences):
     english_pattern = re.compile(r'^[a-zA-Z\s\.,!?\'\"\n\-]+$')
     hanja_pattern = re.compile(r'^[\u4E00-\u9FFF\u3400-\u4DBF\u20000-\u2A6DF\s\.,!?\'\"\n\-]+$')
