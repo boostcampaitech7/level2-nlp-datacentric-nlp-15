@@ -1,0 +1,11 @@
+.idea
+data/*
+models/*
+output/*
+test
+
+src/__pycache__
+src/wandb
+
+*.pyc
+*.tar.gz
